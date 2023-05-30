@@ -30,7 +30,7 @@ app.use(express.urlencoded())
 
 
 app.engine('html', require('ejs').renderFile);
-app.set('view engine','html'); // set the template engine as pug 
+app.set('view engine','html'); // set the template engine as html 
 app.set('views',path.join(__dirname,'views')); // Set the view directory 
 
 
