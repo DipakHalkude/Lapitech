@@ -1,50 +1,46 @@
 const express = require("express");
-const port = 3001;
-const app = express();
 const path = require("path");
 const mongoose = require('mongoose');
-const bodyparser = require("body-parser");
+const bodyParser = require("body-parser");
 
-main().catch(err => console.log(err));
+const app = express();
+const port = process.env.PORT || 3001;
 
-async function main() {
-  await mongoose.connect('mongodb://127.0.0.1:27017/Contact_us');
-}
+// Connect to MongoDB
+mongoose.connect('mongodb://127.0.0.1:27017/Contact_us', { useNewUrlParser: true, useUnifiedTopology: true })
+    .catch(err => console.error(err));
 
 // Define mongoose schema
 const contactSchema = new mongoose.Schema({
-  name: String,
-  phone: String,
-  email: String,
-  concern: String
+    name: String,
+    phone: String,
+    email: String,
+    concern: String
 });
-
 const Contact_us = mongoose.model('Contact_us', contactSchema);
 
-// EXPRESS SPECIFIC STUFF
-app.use("/static", express.static('static')); // For serving static files
-app.use(express.urlencoded({ extended: true }));
+// Middleware
+app.use("/static", express.static(path.join(__dirname, 'static')));
+app.use(bodyParser.urlencoded({ extended: true }));
 
 // Set up view engine
 app.engine('html', require('ejs').renderFile);
-app.set('view engine', 'html'); // Set the template engine as html
-app.set('views', path.join(__dirname, 'views')); // Set the views directory
+app.set('view engine', 'html');
+app.set('views', path.join(__dirname, 'views'));
 
-// ENDPOINTS
+// Routes
 app.get('/', (req, res) => {
-  res.render('index.html');
+    res.render('index.html');
 });
 
 app.post("/contact", (req, res) => {
-  var mydata = new Contact_us(req.body);
-  mydata.save().then(() => {
-    res.render('index.html');
-  }).catch(() => {
-    res.status(400).send('Item was not saved to the database');
-  });
+    const myData = new Contact_us(req.body);
+    myData.save()
+        .then(() => res.render('index.html'))
+        .catch(() => res.status(400).send('Item was not saved to the database'));
 });
 
-// START SERVER
+// Start server
 app.listen(port, () => {
-  console.log(`The application started successfully on port ${port}`);
+    console.log(`The application started successfully on port ${port}`);
 });
